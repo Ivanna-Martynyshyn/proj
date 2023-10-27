@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            position: relative;
+        }
+        .circle {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background-color: #3498db;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 10px 36px 10px rgba(0,0,0,.1);
+            border: 2px solid #acd6ef;
+            animation: append-animate .04s linear;
+            transition: .2s;
+        }
+        .circle:hover{
+            background: #2171a4
+        }
+
+        @keyframes append-animate {
+            from {
+                transform: scale(0);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+    </style>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+    <div id="settings">
+        <div class="py-12 px-3 w-full">
+            <h1 class="text-center text-3xl uppercase font-bold text-sky-400">reaction game</h1>
+        </div>
+        <div  class="w-full text-center">
+            <h2 class="text-xl font-medium">Settings</h2>
+            <div class="space-y-3 mt-3">
+                <div>
+                    <label for="speed">Appearance speed: <span id="speed-value">3</span></label><br>
+                    <input type="range" name="speed" id="speed" class="cursor-pointer" min="1" max="10" value="3">
+                </div>
+                <div>
+                    <label for="size">Circle size: <span id="size-value">7</span></label><br>
+                    <input type="range" name="size" id="size" class="cursor-pointer" min="1" max="10" value="7">
+                </div>
+                <div>
+                    <label for="missed">Number of missed circles: <span id="missed-value">5</span></label><br>
+                    <input type="range" name="missed" id="missed" class="cursor-pointer" min="1" max="10" value="5">
+                </div>
+
+                <button id="start-button" class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 focus:bg-gray-700 active:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                    Start game
+                </button>
+            </div>
+        </div>
+    </div>
+    <div id="game" class="hidden h-screen w-full flex flex-col">
+        <div class="h-[100px] flex items-center justify-around gap-5 shrink-0">
+            <div class="text-2xl font-bold text-sky-500 uppercase">Score: <span id="score">0</span></div>
+            <button id="stop-button" class="inline-flex items-center px-4 py-2 bg-red-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-700 focus:bg-red-700 active:bg-red-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                Stop
+            </button>
+        </div>
+        <div id="game-container" class="grow">
+        </div>
+    </div>
+
+
+<script>
+  let gameContainer = document.getElementById('game-container');
+  let game = document.getElementById('game');
+  let settings = document.getElementById('settings');
+  let scoreDisplay = document.getElementById('score');
+  let startButton = document.getElementById('start-button');
+  let stopButton = document.getElementById('stop-button');
+  let speed = 3;
+  let size = 7;
+  let missed = 5;
+  let score = 0;
+  let gameInterval;
+  let circles = 0;
+  let audio = new Audio('./pop.mp3');
+  audio.volume = 1;
+  let audioMain = new Audio('./sieben-tage-lang-tin-whistle.mp3');
+  audioMain.loop = true;
+  audioMain.volume = 0.05;
+
+
+  document.getElementById('speed').addEventListener('input', function (e){
+    document.getElementById('speed-value').textContent = e.target.value;
+    speed = Number(e.target.value);
+  });
+  document.getElementById('size').addEventListener('input', function (e){
+    document.getElementById('size-value').textContent = e.target.value;
+    size = Number(e.target.value);
+  });
+  document.getElementById('missed').addEventListener('input', function (e){
+      document.getElementById('missed-value').textContent = e.target.value;
+      missed = Number(e.target.value);
+  });
+
+  startButton.addEventListener('click', startGame);
+  stopButton.addEventListener('click', endGame);
+
+  gameContainer.addEventListener('click', function(event) {
+      if (event.target.classList.contains('circle')) {
+          audio.play();
+          event.target.remove();
+          score += 1;
+          circles -= 1;
+          scoreDisplay.textContent = score;
+      }
+  });
+
+  function startGame() {
+    score = 0;
+    circles = 0;
+    scoreDisplay.textContent = score;
+    game.classList.remove('hidden');
+    settings.classList.add('hidden');
+
+    gameInterval = setInterval(createCircle, (1200 - speed * 100));
+      audioMain.play();
+  }
+
+  function createCircle() {
+      if(circles === missed){
+          endGame();
+      } else{
+          const circle = document.createElement('div');
+          circle.classList.add('circle');
+
+          let diameter = size * 10 + 30;
+          const maxX = gameContainer.clientWidth - diameter;
+          const maxY = gameContainer.clientHeight - diameter;
+
+          const x = Math.floor(Math.random() * maxX);
+          const y = Math.floor(Math.random() * maxY);
+
+          circle.style.width = diameter + 'px';
+          circle.style.height = diameter + 'px';
+          circle.style.left = x + 'px';
+          circle.style.top = y + 'px';
+
+          gameContainer.appendChild(circle);
+          circles += 1;
+      }
+  }
+
+  function endGame() {
+    clearInterval(gameInterval);
+    game.classList.add('hidden');
+    settings.classList.remove('hidden');
+    gameContainer.innerHTML = '';
+      audioMain.pause();
+    alert('Game over! Your score: ' + score);
+  }
+
+
+</script>
+</body>
+</html>
